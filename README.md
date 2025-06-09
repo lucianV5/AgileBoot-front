@@ -22,30 +22,6 @@
 
 ## ⚡ 平台简介 ⚡
 
-- 本仓库是 Agilboot 快速开发脚手架的配套前端项目。前端是基于优秀的开源项目[Pure-Admin](https://github.com/pure-admin/vue-pure-admin)开发而成。在此感谢 Pure-Admin 作者。
-- 本仓库前端技术栈 [Vue3](https://v3.cn.vuejs.org) + [Element Plus](https://element-plus.org/zh-CN) + [Vite](https://cn.vitejs.dev) 版本。
-- 配套后端代码仓库地址[AgileBoot-Back-End](https://github.com/valarchie/AgileBoot-Back-End) 版本。
-
-- 规范请参照该文档 [前端规范](https://gitee.com/MinJieLiu/web-standard#/MinJieLiu/web-standard)
-
-### 前端配套资料
-
-#### 配套视频
-
-- [点我查看教程](https://www.bilibili.com/video/BV1kg411v7QT)
-- [点我查看 UI 设计](https://www.bilibili.com/video/BV17g411T7rq)
-
-#### 配套保姆级文档
-
-- [查看文档](https://yiming_chang.gitee.io/pure-admin-doc)
-
-#### Pure-Admin 框架预览
-
-- [查看预览](https://pure-admin-thin.netlify.app/#/login)
-
-#### Pure-Admin 维护者
-
-- [xiaoxian521](https://github.com/xiaoxian521)
 
 ## ✨ 使用 ✨
 
@@ -112,9 +88,7 @@ npm config set registry https://registry.npmmirror.com
 
 [项目文档](https://juejin.cn/column/7159946528827080734)
 
-## 🎬 AgileBoot 全栈交流群 🎬
 
-QQ 群： [![加入QQ群](https://img.shields.io/badge/1398880-blue.svg)](https://qm.qq.com/cgi-bin/qm/qr?k=TR5guoXS0HssErVWefmdFRirJvfpEvp1&jump_from=webapi&authKey=VkWMmVhp/pNdWuRD8sqgM+Sv2+Vy2qCJQSeLmeXlLtfER2RJBi6zL56PdcRlCmTs) 点击按钮入群。
 
 如果觉得该项目对您有帮助，可以小额捐赠支持本项目演示网站服务器等费用~
 
