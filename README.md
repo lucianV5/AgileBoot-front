@@ -86,7 +86,7 @@ npm config set registry https://registry.npmmirror.com
 - <www.agileboot.cc>
   > 账号密码：admin/admin123
 
-[项目文档](https://juejin.cn/column/7159946528827080734)
+
 
 
 
