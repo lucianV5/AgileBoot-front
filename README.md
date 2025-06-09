@@ -90,10 +90,6 @@ npm config set registry https://registry.npmmirror.com
 
 
 
-如果觉得该项目对您有帮助，可以小额捐赠支持本项目演示网站服务器等费用~
-
-<img alt="logo" height="200" src="https://oscimg.oschina.net/oscnet/up-28b63fdd7b3ce003bd30c25883f2276212b.png">
-
 ### 用法
 
 #### 安装依赖
