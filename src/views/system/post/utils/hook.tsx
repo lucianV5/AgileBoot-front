@@ -7,6 +7,7 @@ import { CommonUtils } from "@/utils/common";
 import { PaginationProps } from "@pureadmin/table";
 import {
   PostListCommand,
+  PostPageResponse,
   getPostListApi,
   exportPostExcelApi,
   deletePostApi
@@ -52,9 +53,9 @@ export function usePostHook() {
     status: undefined
   });
 
-  const dataList = ref([]);
+  const dataList = ref<PostPageResponse[]>([]);
   const pageLoading = ref(true);
-  const multipleSelection = ref([]);
+  const multipleSelection = ref<PostPageResponse[]>([]);
   const sortState = ref<Sort>(defaultSort);
 
   const columns: TableColumnList = [
@@ -120,12 +121,12 @@ export function usePostHook() {
     getPostList();
   }
 
-  async function onSearch(tableRef) {
+  async function onSearch(tableRef: { getTableRef: () => { sort: (prop: string, order: string) => void } }) {
     // 点击搜索的时候，需要重置排序，重新排序的时候会重置分页并发起查询请求
     tableRef.getTableRef().sort("postSort", "ascending");
   }
 
-  function resetForm(formEl, tableRef) {
+  function resetForm(formEl: any, tableRef: any) {
     if (!formEl) return;
     // 清空查询参数
     formEl.resetFields();
@@ -156,12 +157,12 @@ export function usePostHook() {
       CommonUtils.fillSortParams(searchFormParams, sortState.value);
     }
     CommonUtils.fillPaginationParams(searchFormParams, pagination);
-    CommonUtils.fillTimeRangeParams(searchFormParams, timeRange.value);
+    timeRange.value && CommonUtils.fillTimeRangeParams(searchFormParams, timeRange.value);
 
     exportPostExcelApi(toRaw(searchFormParams), "岗位数据.xlsx");
   }
 
-  async function handleDelete(row) {
+  async function handleDelete(row: any) {
     await deletePostApi([row.postId]).then(() => {
       message(`您删除了编号为${row.postId}的这条岗位数据`, {
         type: "success"
@@ -171,7 +172,7 @@ export function usePostHook() {
     });
   }
 
-  async function handleBulkDelete(tableRef) {
+  async function handleBulkDelete(tableRef: any) {
     if (multipleSelection.value.length === 0) {
       message("请选择需要删除的数据", { type: "warning" });
       return;
@@ -189,7 +190,7 @@ export function usePostHook() {
       }
     )
       .then(async () => {
-        await deletePostApi(multipleSelection.value).then(() => {
+        await deletePostApi(multipleSelection.value.map(item => item.postId)).then(() => {
           message(`您删除了编号为[ ${multipleSelection.value} ]的岗位数据`, {
             type: "success"
           });

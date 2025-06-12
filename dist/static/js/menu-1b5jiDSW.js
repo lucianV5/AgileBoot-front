@@ -1,0 +1,1 @@
+import{aT as t}from"./index-DLbSnZ-2.js";const n=e=>t.request("get","/system/menus",{params:e}),r=e=>t.request("post","/system/menus",{data:e}),m=(e,s)=>t.request("put",`/system/menus/${e}`,{data:s}),p=e=>t.request("delete",`/system/menus/${e}`),a=e=>t.request("get",`/system/menus/${e}`);export{a,r as b,p as d,n as g,m as u};

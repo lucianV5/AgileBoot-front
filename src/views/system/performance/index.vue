@@ -172,7 +172,7 @@
             v-model="performanceForm.userId"
             filterable
             remote
-            :remote-method="query => debouncedSearch.start(query)"
+            :remote-method="(query: string) => debouncedSearch.start(query)"
             :loading="userLoading"
             placeholder="请输入用户名搜索"
             @change="handleUserChange"
@@ -316,7 +316,7 @@ const multiple = ref(true);
 const ids = ref<Array<number>>([]);
 const total = ref(0);
 const performanceList = ref<Array<PerformanceVO>>([]);
-const dateRange = ref<[string, string] | null>(null);
+const dateRange = ref<[string, string] | undefined>(undefined);
 const deptOptions = ref<DeptTreeDTO[]>([]);
 const userOptions = ref<Array<any>>([]);
 
@@ -408,25 +408,25 @@ const columns = [
     label: t("performance.quarter"),
     prop: "quarter",
     minWidth: 100,
-    formatter: row => `第${row.quarter}季度`
+    formatter: (row: PerformanceVO) => `第${row.quarter}季度`
   },
   {
     label: t("performance.deptScore"),
     prop: "deptScore",
     minWidth: 120,
-    formatter: row => `${row.deptScore.toFixed(2)}`
+    formatter: (row: PerformanceVO) => `${row.deptScore.toFixed(2)}`
   },
   {
     label: t("performance.personalScore"),
     prop: "personalScore",
     minWidth: 120,
-    formatter: row => `${row.personalScore.toFixed(2)}`
+    formatter: (row: PerformanceVO) => `${row.personalScore.toFixed(2)}`
   },
   {
     label: t("performance.totalScore"),
     prop: "totalScore",
     minWidth: 120,
-    formatter: row => `${row.totalScore.toFixed(2)}`
+    formatter: (row: PerformanceVO) => `${row.totalScore.toFixed(2)}`
   },
   { label: t("performance.createTime"), prop: "createTime", minWidth: 180 },
   { label: t("performance.updateTime"), prop: "updateTime", minWidth: 180 },
@@ -486,24 +486,24 @@ const getDeptTree = async () => {
     const res = await getDeptTreeSelect();
     console.log("原始部门数据:", JSON.stringify(res.data, null, 2));
     // 处理部门数据，适配el-tree-select组件需要的格式
-    const formatDeptData = data => {
+    const formatDeptData = (data: DeptTreeDTO | DeptTreeDTO[]): DeptTreeDTO[] => {
       if (!data) return [];
       const deptData = Array.isArray(data) ? data : [data];
-      const processDept = dept => {
+      const processDept = (dept: DeptTreeDTO): DeptTreeDTO | null => {
         if (!dept) return null;
         // 保留原始数据的所有字段
-        const result = {
+        const result: DeptTreeDTO = {
           ...dept,
           children: []
         };
         if (dept.children && Array.isArray(dept.children)) {
           result.children = dept.children
-            .map(child => processDept(child))
-            .filter(Boolean);
+            .map((child: DeptTreeDTO) => processDept(child))
+            .filter((item): item is DeptTreeDTO => item !== null);
         }
         return result;
       };
-      return deptData.map(dept => processDept(dept)).filter(Boolean);
+      return deptData.map(dept => processDept(dept)).filter((item): item is DeptTreeDTO => item !== null);
     };
     deptOptions.value = formatDeptData(res.data);
     console.log(
@@ -592,7 +592,7 @@ const reset = () => {
 };
 
 /** 日期范围变化处理 */
-const handleDateRangeChange = val => {
+const handleDateRangeChange = (val: [string, string] | null) => {
   console.log("日期范围变化:", val);
 };
 
@@ -605,7 +605,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  dateRange.value = null;
+  dateRange.value = undefined;
   searchFormRef.value?.resetFields();
   // 重置后立即查询
   handleQuery();

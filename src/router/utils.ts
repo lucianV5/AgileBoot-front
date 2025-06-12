@@ -54,21 +54,21 @@ function ascending(arr: any[]) {
 }
 
 /** 过滤meta中showLink为false的菜单 */
-function filterTree(data: RouteComponent[]) {
+function filterTree(data: any[]) {
   const newTree = cloneDeep(data).filter(
     (v: { meta: { showLink: boolean } }) => v.meta?.showLink !== false
   );
   newTree.forEach(
-    (v: { children }) => v.children && (v.children = filterTree(v.children))
+    (v: { children?: any[] }) => v.children && (v.children = filterTree(v.children))
   );
   return newTree;
 }
 
 /** 过滤children长度为0的的目录，当目录下没有菜单时，会过滤此目录，目录没有赋予roles权限，当目录下只要有一个菜单有显示权限，那么此目录就会显示 */
-function filterChildrenTree(data: RouteComponent[]) {
+function filterChildrenTree(data: any[]) {
   const newTree = cloneDeep(data).filter((v: any) => v?.children?.length !== 0);
   newTree.forEach(
-    (v: { children }) => v.children && (v.children = filterTree(v.children))
+    (v: { children?: any[] }) => v.children && (v.children = filterTree(v.children))
   );
   return newTree;
 }
@@ -83,7 +83,7 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
 }
 
 /** 从sessionStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
-function filterNoPermissionTree(data: RouteComponent[]) {
+function filterNoPermissionTree(data: any[]) {
   const roleKey =
     storageSession().getItem<TokenDTO>(sessionKey).currentUser.roleKey;
   const currentRoles = roleKey ? [roleKey] : [];
@@ -103,7 +103,7 @@ function getParentPaths(value: string, routes: RouteRecordRaw[], key = "path") {
     for (let i = 0; i < routes.length; i++) {
       const item = routes[i];
       // 返回父级path
-      if (item[key] === value) return parents;
+      if ((item as Record<string, any>)[key] === value) return parents;
       // children不存在或为空则不递归
       if (!item.children || !item.children.length) continue;
       // 往下查找时将当前path入栈
@@ -121,23 +121,22 @@ function getParentPaths(value: string, routes: RouteRecordRaw[], key = "path") {
 }
 
 /** 查找对应 `path` 的路由信息 */
-function findRouteByPath(path: string, routes: RouteRecordRaw[]) {
+function findRouteByPath(path: string, routes: RouteRecordRaw[]): RouteRecordRaw | undefined {
   let res = routes.find((item: { path: string }) => item.path == path);
   if (res) {
     return isProxy(res) ? toRaw(res) : res;
   } else {
     for (let i = 0; i < routes.length; i++) {
-      if (
-        routes[i].children instanceof Array &&
-        routes[i].children.length > 0
-      ) {
-        res = findRouteByPath(path, routes[i].children);
+      const route = routes[i];
+      const children = route?.children;
+      if (children && children.length > 0) {
+        res = findRouteByPath(path, children as RouteRecordRaw[]);
         if (res) {
           return isProxy(res) ? toRaw(res) : res;
         }
       }
     }
-    return null;
+    return undefined;
   }
 }
 
@@ -152,32 +151,35 @@ function addPathMatch() {
 }
 
 /** 处理动态路由（后端返回的路由） */
-function handleAsyncRoutes(routeList) {
+function handleAsyncRoutes(routeList: RouteRecordRaw[]) {
   if (routeList.length === 0) {
     usePermissionStoreHook().handleWholeMenus(routeList);
   } else {
-    formatFlatteningRoutes(addAsyncRoutes(routeList)).map(
-      (v: RouteRecordRaw) => {
+    const routes = addAsyncRoutes(routeList);
+    if (routes) {
+      formatFlatteningRoutes(routes).map((v: RouteRecordRaw) => {
         // 防止重复添加路由
-        if (
-          router.options.routes[0].children.findIndex(
-            value => value.path === v.path
-          ) !== -1
-        ) {
+        if (router.options.routes[0]?.children?.findIndex(
+          value => value.path === v.path
+        ) !== -1) {
           return;
         } else {
           // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
-          router.options.routes[0].children.push(v);
+          router.options.routes[0]?.children?.push(v);
           // 最终路由进行升序
-          ascending(router.options.routes[0].children);
-          if (!router.hasRoute(v?.name)) router.addRoute(v);
-          const flattenRouters: any = router
+          if (router.options.routes[0]?.children) {
+            ascending(router.options.routes[0].children);
+          }
+          if (v.name && !router.hasRoute(v.name)) router.addRoute(v);
+          const flattenRouters = router
             .getRoutes()
             .find(n => n.path === "/");
-          router.addRoute(flattenRouters);
+          if (flattenRouters) {
+            router.addRoute(flattenRouters);
+          }
         }
-      }
-    );
+      });
+    }
     usePermissionStoreHook().handleWholeMenus(routeList);
   }
   addPathMatch();
@@ -251,7 +253,10 @@ function formatTwoStageRoutes(routesList: RouteRecordRaw[]) {
         children: []
       });
     } else {
-      newRoutesList[0]?.children.push({ ...v });
+      const firstRoute = newRoutesList[0];
+      if (firstRoute?.children) {
+        firstRoute.children.push({ ...v });
+      }
     }
   });
   return newRoutesList;
@@ -298,7 +303,14 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
   const modulesRoutesKeys = Object.keys(modulesRoutes);
   arrRoutes.forEach((v: RouteRecordRaw) => {
     // 将backstage属性加入meta，标识此路由为后端返回路由
-    v.meta.backstage = true;
+    if (!v.meta) {
+      v.meta = {
+        title: v.name as string,
+        backstage: true
+      };
+    } else {
+      v.meta.backstage = true;
+    }
     // 父级的redirect属性取值：如果子级存在且父级的redirect属性不存在，默认取第一个子级的path；如果子级存在且父级的redirect属性存在，取存在的redirect属性，会覆盖默认值
     if (v?.children && v.children.length && !v.redirect)
       v.redirect = v.children[0].path;
@@ -323,7 +335,7 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
 }
 
 /** 获取路由历史模式 https://next.router.vuejs.org/zh/guide/essentials/history-mode.html */
-function getHistoryMode(routerHistory): RouterHistory {
+function getHistoryMode(routerHistory: string): RouterHistory {
   // len为1 代表只有历史模式 为2 代表历史模式中存在base参数 https://next.router.vuejs.org/zh/api/#%E5%8F%82%E6%95%B0-1
   const historyMode = routerHistory.split(",");
   const leftMode = historyMode[0];
@@ -343,6 +355,8 @@ function getHistoryMode(routerHistory): RouterHistory {
       return createWebHistory(rightMode);
     }
   }
+  // Default to hash history if no valid mode is specified
+  return createWebHashHistory("");
 }
 
 /** 获取当前页面按钮级别的权限 */
@@ -363,9 +377,12 @@ function hasAuth(value: string | Array<string>): boolean {
 }
 
 /** 获取所有菜单中的第一个菜单（顶级菜单）*/
-function getTopMenu(tag = false): menuType {
-  const topMenu = usePermissionStoreHook().wholeMenus[0]?.children[0];
-  tag && useMultiTagsStoreHook().handleTags("push", topMenu);
+function getTopMenu(tag = false): menuType | undefined {
+  const wholeMenus = usePermissionStoreHook().wholeMenus as menuType[];
+  const topMenu = wholeMenus[0]?.children?.[0];
+  if (topMenu && tag) {
+    useMultiTagsStoreHook().handleTags("push", topMenu);
+  }
   return topMenu;
 }
 
@@ -387,3 +404,4 @@ export {
   formatFlatteningRoutes,
   filterNoPermissionTree
 };
+

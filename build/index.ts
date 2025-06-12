@@ -1,4 +1,17 @@
 /** 处理环境变量 */
+type Recordable<T = any> = Record<string, T>;
+
+interface ViteEnv {
+  VITE_PORT: number;
+  VITE_PUBLIC_PATH: string;
+  VITE_ROUTER_HISTORY: string;
+  VITE_CDN: boolean;
+  VITE_HIDE_HOME: string;
+  VITE_COMPRESSION: "gzip" | "brotli" | "both" | "none";
+  VITE_APP_BASE_API: string;
+  [key: string]: any;
+}
+
 const wrapperEnv = (envConfigs: Recordable): ViteEnv => {
   /** 此处为默认值 */
   const defaultEnvConfigs: ViteEnv = {

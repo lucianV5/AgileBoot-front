@@ -134,8 +134,8 @@ export const appendFieldByUniqueId = (
  * @param field 根据哪个字段来设置disabled
  * @returns
  */
-export function setDisabledForTreeOptions(treeList, field) {
-  if (!treeList || !treeList.length) return;
+export function setDisabledForTreeOptions(treeList: any[], field: string) {
+  if (!treeList || !treeList.length) return [];
   const newTreeList = [];
   for (let i = 0; i < treeList.length; i++) {
     treeList[i].disabled = treeList[i][field] === 0 ? true : false;

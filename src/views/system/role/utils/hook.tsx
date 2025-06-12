@@ -19,9 +19,9 @@ export function useRole() {
     roleName: "",
     status: undefined
   });
-  const dataList = ref([]);
+  const dataList = ref<RoleDTO[]>([]);
   const loading = ref(true);
-  const switchLoadMap = ref({});
+  const switchLoadMap = ref<Record<string, any>>({});
   const { switchStyle } = usePublicHooks();
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -92,7 +92,7 @@ export function useRole() {
   //   ];
   // });
 
-  function onChange({ row, index }) {
+  function onChange({ row, index }: { row: RoleDTO; index: number }) {
     ElMessageBox.confirm(
       `确认要<strong>${
         row.status === 0 ? "停用" : "启用"
@@ -153,8 +153,8 @@ export function useRole() {
       loading.value = true;
       const { data } = await getRoleListApi(toRaw(form));
       console.log("role list", data);
-      dataList.value = data.rows;
-      pagination.total = data.total;
+      dataList.value = data.data.rows;
+      pagination.total = data.data.total;
     } catch (e) {
       console.error(e);
       ElMessage.error((e as Error)?.message || "加载失败");
@@ -185,6 +185,20 @@ export function useRole() {
   /** 数据权限 可自行开发 */
   // function handleDatabase() {}
 
+  function handleSelectionChange(selection: any[]) {
+    // 处理选择变化
+  }
+
+  function handleSizeChange(size: number) {
+    pagination.pageSize = size;
+    onSearch();
+  }
+
+  function handleCurrentChange(current: number) {
+    pagination.currentPage = current;
+    onSearch();
+  }
+
   onMounted(onSearch);
 
   return {
@@ -197,6 +211,9 @@ export function useRole() {
     resetForm,
     menuTree,
     getMenuTree,
-    handleDelete
+    handleDelete,
+    handleSelectionChange,
+    handleSizeChange,
+    handleCurrentChange
   };
 }

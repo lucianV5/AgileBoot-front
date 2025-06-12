@@ -1,0 +1,1 @@
+import{l as s,aX as t,aP as o}from"./index-DLbSnZ-2.js";const g=s({name:[{required:!0,message:"部门名称为必填项",trigger:"blur"}],phone:[{validator:(i,e,r)=>{e===""||o(e)?r():r(new Error("请输入正确的手机号码格式"))},trigger:"blur"}],email:[{validator:(i,e,r)=>{e===""||t(e)?r():r(new Error("请输入正确的邮箱格式"))},trigger:"blur"}]});export{g as f};

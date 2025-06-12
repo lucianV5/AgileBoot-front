@@ -11,6 +11,8 @@ import removeConsole from "vite-plugin-remove-console";
 import { themePreprocessorPlugin } from "@pureadmin/theme";
 import { genScssMultipleScopeVars } from "../src/layout/theme";
 
+type ViteCompression = "gzip" | "brotli" | "both" | "none";
+
 export function getPluginsList(
   command: string,
   VITE_CDN: boolean,

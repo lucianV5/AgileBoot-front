@@ -47,7 +47,9 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
         "/dev-api": {
           target: "http://localhost:8080",
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/dev-api/, "")
+          rewrite: path => path.replace(/^\/dev-api/, ""),
+          secure: false,
+          ws: true
         }
       }
     },

@@ -28,7 +28,10 @@ const {
   resetForm,
   menuTree,
   getMenuTree,
-  handleDelete
+  handleDelete,
+  handleSelectionChange,
+  handleSizeChange,
+  handleCurrentChange
 } = useRole();
 
 const opType = ref<"add" | "update">("add");

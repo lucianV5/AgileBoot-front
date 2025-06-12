@@ -1,6 +1,6 @@
 import i18n from "@/locales";
 
-import TrendCharts from "@iconify-icons/ep/trend-charts";
+import  TrendCharts  from "@iconify-icons/ep/trend-charts";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
 const performanceRouter = {

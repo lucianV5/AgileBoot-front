@@ -1,0 +1,1 @@
+import{aT as e}from"./index-DLbSnZ-2.js";const n=t=>e.request("get","/monitor/onlineUsers",{params:t}),o=t=>e.request("delete",`/monitor/onlineUser/${t}`),s=()=>e.request("get","/monitor/serverInfo"),i=()=>e.request("get","/monitor/cacheInfo");export{n as a,s as b,i as g,o as l};

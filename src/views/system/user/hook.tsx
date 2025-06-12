@@ -8,6 +8,7 @@ import {
   updateUserApi,
   exportUserExcelApi,
   UserRequest,
+  UserDTO,
   deleteUserApi,
   PasswordRequest,
   updateUserPasswordApi
@@ -24,10 +25,12 @@ import { handleTree, setDisabledForTreeOptions } from "@/utils/tree";
 import { getDeptListApi } from "@/api/system/dept";
 import { getPostListApi } from "@/api/system/post";
 import { getRoleListApi } from "@/api/system/role";
+import { PostPageResponse } from "@/api/system/post";
+import { RoleDTO } from "@/api/system/role";
 
 export function useHook() {
   const searchFormParams = reactive<UserQuery>({
-    deptId: null,
+    deptId: undefined,
     phoneNumber: undefined,
     status: undefined,
     username: undefined,
@@ -37,9 +40,9 @@ export function useHook() {
   const formRef = ref();
   const timeRange = ref<[string, string]>();
 
-  const dataList = ref([]);
+  const dataList = ref<UserDTO[]>([]);
   const pageLoading = ref(true);
-  const switchLoadMap = ref({});
+  const switchLoadMap = ref<Record<string, any>>({});
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 10,
@@ -47,9 +50,9 @@ export function useHook() {
     background: true
   });
 
-  const deptTreeList = ref([]);
-  const postOptions = ref([]);
-  const roleOptions = ref([]);
+  const deptTreeList = ref<any[]>([]);
+  const postOptions = ref<PostPageResponse[]>([]);
+  const roleOptions = ref<RoleDTO[]>([]);
 
   const columns: TableColumnList = [
     {
@@ -151,7 +154,7 @@ export function useHook() {
     ];
   });
 
-  function onChange({ row, index }) {
+  function onChange({ row, index }: { row: UserDTO; index: number }) {
     ElMessageBox.confirm(
       `确认要<strong>${
         row.status === 0 ? "停用" : "启用"
@@ -169,7 +172,7 @@ export function useHook() {
     )
       .then(async () => {
         switchLoading(index, true);
-        await updateUserStatusApi(row.userId, row.status).finally(() => {
+        await updateUserStatusApi(row.userId!, row.status!).finally(() => {
           switchLoading(index, false);
         });
         message("已成功修改用户状态", {
@@ -196,7 +199,7 @@ export function useHook() {
     exportUserExcelApi(toRaw(searchFormParams), "用户列表.xls");
   }
 
-  async function handleAdd(row, done) {
+  async function handleAdd(row: UserRequest, done: () => void) {
     await addUserApi(row as UserRequest).then(() => {
       message(`您新增了用户${row.username}的这条数据`, {
         type: "success"
@@ -208,7 +211,7 @@ export function useHook() {
     });
   }
 
-  async function handleUpdate(row, done) {
+  async function handleUpdate(row: UserRequest, done: () => void) {
     await updateUserApi(row.userId, row as UserRequest).then(() => {
       message(`您修改了用户${row.username}的这条数据`, {
         type: "success"
@@ -220,15 +223,15 @@ export function useHook() {
     });
   }
 
-  async function handleDelete(row) {
-    await deleteUserApi(row.userId).then(() => {
+  async function handleDelete(row: UserDTO) {
+    await deleteUserApi(row.userId!).then(() => {
       message(`您删除了用户${row.username}的这条数据`, { type: "success" });
       // 刷新列表
       getList();
     });
   }
 
-  async function handleResetPassword(row, request, done) {
+  async function handleResetPassword(row: UserDTO, request: PasswordRequest, done: () => void) {
     await updateUserPasswordApi(request).then(() => {
       message(`您修改了用户${row.username}的密码`, { type: "success" });
       // 刷新列表
@@ -271,18 +274,24 @@ export function useHook() {
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: ({ options }) => h(editForm, { 
+        ref: formRef,
+        formInline: options.props.formInline,
+        deptOptions: deptTreeList.value,
+        postOptions: postOptions.value,
+        roleOptions: roleOptions.value
+      }),
       beforeSure: (done, { options }) => {
         const formRuleRef = formRef.value.getFormRuleRef();
         const curData = options.props.formInline as UserRequest;
 
-        formRuleRef.validate(valid => {
+        formRuleRef.validate((valid: boolean) => {
           if (valid) {
             // 表单规则校验通过
             if (title === "新增") {
-              handleAdd(curData, done);
+              handleAdd(curData, () => void done());
             } else {
-              handleUpdate(curData, done);
+              handleUpdate(curData, () => void done());
             }
           }
         });
@@ -290,7 +299,7 @@ export function useHook() {
     });
   }
 
-  async function openResetPasswordDialog(row) {
+  async function openResetPasswordDialog(row: UserDTO) {
     const passwordFormRef = ref();
     addDialog({
       title: `重置密码`,
@@ -302,14 +311,17 @@ export function useHook() {
       },
       width: "30%",
       closeOnClickModal: false,
-      contentRenderer: () => h(passwordForm, { ref: passwordFormRef }),
+      contentRenderer: ({ options }) => h(passwordForm, { 
+        ref: passwordFormRef,
+        formInline: options.props.formInline
+      }),
       beforeSure: (done, { options }) => {
         const formRef = passwordFormRef.value.getFormRuleRef();
         const curData = options.props.formInline as PasswordRequest;
 
-        formRef.validate(valid => {
+        formRef.validate((valid: boolean) => {
           if (valid) {
-            handleResetPassword(row, curData, done);
+            handleResetPassword(row, curData, () => done());
           }
         });
       }
@@ -335,7 +347,7 @@ export function useHook() {
 
   async function getList() {
     CommonUtils.fillPaginationParams(searchFormParams, pagination);
-    CommonUtils.fillTimeRangeParams(searchFormParams, timeRange.value);
+    CommonUtils.fillTimeRangeParams(searchFormParams, timeRange.value ? [timeRange.value[0], timeRange.value[1]] : []);
 
     pageLoading.value = true;
     const { data } = await getUserListApi(toRaw(searchFormParams)).finally(
@@ -343,12 +355,11 @@ export function useHook() {
         pageLoading.value = false;
       }
     );
-
     dataList.value = data.rows;
     pagination.total = data.total;
   }
 
-  const resetForm = formEl => {
+  const resetForm = (formEl: any) => {
     if (!formEl) return;
     formEl.resetFields();
     onSearch();
@@ -357,8 +368,8 @@ export function useHook() {
   onMounted(async () => {
     onSearch();
     const deptResponse = await getDeptListApi();
-    deptTreeList.value = await setDisabledForTreeOptions(
-      handleTree(deptResponse.data),
+    deptTreeList.value = setDisabledForTreeOptions(
+      handleTree(deptResponse.data) ?? [],
       "status"
     );
 

@@ -1,0 +1,1 @@
+import{aT as s}from"./index-DLbSnZ-2.js";function r(t){return s.request("get","/system/post/list",{params:t})}const p=(t,e)=>s.download("/system/post/excel",e,{params:t}),a=t=>s.request("delete","/system/post",{params:{ids:t.toString()}}),n=t=>s.request("post","/system/post",{data:t}),u=t=>s.request("put","/system/post",{data:t});export{n as a,a as d,p as e,r as g,u};

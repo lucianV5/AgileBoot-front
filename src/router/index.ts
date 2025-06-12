@@ -8,7 +8,8 @@ import {
   Router,
   createRouter,
   RouteRecordRaw,
-  RouteComponent
+  RouteComponent,
+  RouteLocationNormalized
 } from "vue-router";
 import {
   ascending,
@@ -39,7 +40,7 @@ const modules: Record<string, any> = import.meta.glob(
 );
 
 /** 原始静态路由（未做任何处理） */
-const routes = [];
+const routes: Array<RouteRecordRaw> = [];
 
 Object.keys(modules).forEach(key => {
   routes.push(modules[key].default);
@@ -52,12 +53,13 @@ export const constantRoutes: Array<RouteRecordRaw> = formatTwoStageRoutes(
 
 /** 用于渲染菜单，保持原始层级 */
 export const constantMenus: Array<RouteComponent> = ascending(
-  routes.flat(Infinity)
+(routes as RouteRecordRaw[]).flat(Infinity)
 ).concat(...remainingRouter);
 
 /** 不参与菜单的路由 */
 export const remainingPaths = Object.keys(remainingRouter).map(v => {
-  return remainingRouter[v].path;
+  const route = remainingRouter[v as keyof typeof remainingRouter];
+  return typeof route === 'object' && 'path' in route ? route.path : '';
 });
 
 /** 创建路由实例 */
@@ -103,10 +105,10 @@ const { VITE_HIDE_HOME } = import.meta.env;
 
 router.beforeEach((to: ToRouteType, _from, next) => {
   if (to.meta?.keepAlive) {
-    handleAliveRoute(to, "add");
+    handleAliveRoute(to as { name: string }, "add");
     // 页面整体刷新和点击标签页刷新
-    if (_from.name === undefined || _from.name === "Redirect") {
-      handleAliveRoute(to);
+    if (_from.name === undefined || _from.name?.toString() === "Redirect") {
+      handleAliveRoute(to as { name: string });
     }
   }
   const userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
@@ -153,13 +155,13 @@ router.beforeEach((to: ToRouteType, _from, next) => {
             const { path } = to;
             const route = findRouteByPath(
               path,
-              router.options.routes[0].children
+              router.options.routes[0].children ?? []
             );
             getTopMenu(true);
             // query、params模式路由传参数的标签页不在此处处理
             if (route && route.meta?.title) {
               if (
-                isAllEmpty(route.parentId) &&
+                isAllEmpty((route as any).parentId) &&
                 route.meta?.backstage &&
                 route.children &&
                 route.children.length > 0

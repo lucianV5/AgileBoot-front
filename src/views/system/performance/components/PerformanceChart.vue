@@ -231,7 +231,7 @@ export default defineComponent({
         };
 
         // 处理不同的数据结构
-        let deptArray = [];
+        let deptArray: Array<{ id?: number; deptId?: number; label?: string; deptName?: string; children?: any[] }> = [];
         if (res.data) {
           if (Array.isArray(res.data)) {
             deptArray = res.data;

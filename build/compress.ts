@@ -1,6 +1,9 @@
 import type { Plugin } from "vite";
 import { isArray } from "@pureadmin/utils";
 import compressPlugin from "vite-plugin-compression";
+import type { Plugin } from "vite";
+
+type ViteCompression = "gzip" | "brotli" | "both" | "none";
 
 export const configCompressPlugin = (
   compress: ViteCompression

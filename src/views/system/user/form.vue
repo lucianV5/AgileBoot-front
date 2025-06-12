@@ -124,7 +124,7 @@ defineExpose({ getFormRuleRef });
             clearable
           >
             <el-option
-              v-for="dict in useUserStoreHook().dictionaryList['sysUser.sex']"
+              v-for="dict in (useUserStoreHook().dictionaryList as any)?.['sysUser.sex'] || []"
               :key="dict.value"
               :label="dict.label"
               :value="dict.value"
