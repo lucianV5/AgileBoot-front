@@ -7,15 +7,15 @@ import { pinyin } from "pinyin-pro";
 export class CommonUtils {
   static getBeginTimeSafely(timeRange: string[]): string {
     if (timeRange == null) {
-      return undefined;
+      return "";
     }
 
     if (timeRange.length <= 0) {
-      return undefined;
+      return "";
     }
 
     if (timeRange[0] == null) {
-      return undefined;
+      return "";
     }
 
     return timeRange[0];
@@ -23,15 +23,15 @@ export class CommonUtils {
 
   static getEndTimeSafely(timeRange: string[]): string {
     if (timeRange == null) {
-      return undefined;
+      return "";
     }
 
     if (timeRange.length <= 1) {
-      return undefined;
+      return "";
     }
 
     if (timeRange[1] == null) {
-      return undefined;
+      return "";
     }
 
     return timeRange[1];
@@ -100,7 +100,7 @@ export class CommonUtils {
     });
 
     const excelDataList: string[][] = originalDataList.map(item => {
-      const arr = [];
+      const arr: string[] = [];
       dataKeyList.forEach(dataKey => {
         arr.push(item[dataKey]);
       });

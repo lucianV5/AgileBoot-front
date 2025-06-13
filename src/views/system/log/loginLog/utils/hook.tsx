@@ -5,7 +5,8 @@ import {
   getLoginLogListApi,
   deleteLoginLogApi,
   exportLoginLogExcelApi,
-  LoginLogQuery
+  LoginLogQuery,
+  LoginLogsDTO
 } from "@/api/system/log";
 import { reactive, ref, onMounted, toRaw } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -39,7 +40,7 @@ export function useLoginLogHook() {
     timeRangeColumn: defaultSort.prop
   });
 
-  const dataList = ref([]);
+  const dataList = ref<LoginLogsDTO[]>([]);
   const pageLoading = ref(true);
   const multipleSelection = ref([]);
 
@@ -121,7 +122,7 @@ export function useLoginLogHook() {
     getLoginLogList();
   }
 
-  function resetForm(formEl, tableRef) {
+  function resetForm(formEl :any, tableRef :any) {
     if (!formEl) return;
     // 清空查询参数
     formEl.resetFields();
@@ -165,7 +166,7 @@ export function useLoginLogHook() {
     exportLoginLogExcelApi(toRaw(searchFormParams), "登录日志.xls");
   }
 
-  async function handleDelete(row) {
+  async function handleDelete(row :any) {
     await deleteLoginLogApi([row.logId]).then(() => {
       message(`您删除了操作编号为${row.logId}的这条数据`, {
         type: "success"
@@ -175,7 +176,7 @@ export function useLoginLogHook() {
     });
   }
 
-  async function handleBulkDelete(tableRef) {
+  async function handleBulkDelete(tableRef :any) {
     if (multipleSelection.value.length === 0) {
       message("请选择需要删除的数据", { type: "warning" });
       return;

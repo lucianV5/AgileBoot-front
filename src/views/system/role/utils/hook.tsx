@@ -153,8 +153,8 @@ export function useRole() {
       loading.value = true;
       const { data } = await getRoleListApi(toRaw(form));
       console.log("role list", data);
-      dataList.value = data.data.rows;
-      pagination.total = data.data.total;
+      dataList.value = data.rows;
+      pagination.total = data.total;
     } catch (e) {
       console.error(e);
       ElMessage.error((e as Error)?.message || "加载失败");
@@ -163,7 +163,7 @@ export function useRole() {
     }
   }
 
-  const resetForm = formEl => {
+  const resetForm = (formEl: any) => {
     if (!formEl) return;
     formEl.resetFields();
     onSearch();

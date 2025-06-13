@@ -30,7 +30,7 @@ export function useHook() {
   });
 
   const formRef = ref();
-  const dataList = ref([]);
+  const dataList = ref<ConfigDTO[]>([]);
   const pageLoading = ref(true);
   const multipleSelection = ref([]);
 
@@ -87,7 +87,7 @@ export function useHook() {
     getList();
   }
 
-  function resetForm(formEl, tableRef) {
+  function resetForm(formEl: any, tableRef: any): void {
     if (!formEl) return;
     // 清空查询参数
     formEl.resetFields();
@@ -121,9 +121,9 @@ export function useHook() {
     });
   }
 
-  async function handleUpdate(curData, done) {
+  async function handleUpdate(curData: ConfigDTO, done: () => void) {
     const request: UpdateConfigRequest = {
-      configValue: curData.configValue
+      configValue: curData.configValue ?? ''
     };
     console.log("curData");
     console.log(curData);
@@ -140,7 +140,11 @@ export function useHook() {
   }
 
   async function openDialog(row?: ConfigDTO) {
-    const { data } = await getConfigInfoApi(row.configId);
+    // 确保 configId 不为空
+    if (!row?.configId) {
+      throw new Error('配置ID不能为空');
+    }
+    const { data } = await getConfigInfoApi(String(row.configId));
     addDialog({
       title: `修改配置`,
       props: {
@@ -160,9 +164,9 @@ export function useHook() {
 
         const curData = options.props.formInline;
 
-        formRuleRef.validate(valid => {
+        formRuleRef.validate((valid: boolean) => {
           if (valid) {
-            handleUpdate(curData, done);
+            handleUpdate(curData, () => done());
           }
         });
       }

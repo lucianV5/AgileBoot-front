@@ -26,6 +26,7 @@ export interface DeptDTO {
  * AddDeptCommand
  */
 export interface DeptRequest {
+  id :string;
   deptName: string;
   email?: string;
   leaderName?: string;

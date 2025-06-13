@@ -3,7 +3,8 @@ import { message } from "@/utils/message";
 import {
   OnlineUserQuery,
   getOnlineUserListApi,
-  logoutOnlineUserApi
+  logoutOnlineUserApi,
+  OnlineUserInfo
 } from "@/api/system/monitor";
 import { reactive, ref, onMounted, toRaw } from "vue";
 import { PaginationProps } from "@pureadmin/table";
@@ -20,13 +21,13 @@ export function useHook() {
   const timeRange = ref([]);
 
   const searchFormParams = reactive<OnlineUserQuery>({
-    ipAddress: undefined,
-    username: undefined
+    ipAddress: "",
+    username: ""
   });
 
   // 该分页使用前端分页   所以需要一个原始数组来保存原有数据
-  let originalDataList = [];
-  const dataList = ref([]);
+  let originalDataList: any[] = [];
+  const dataList = ref<OnlineUserInfo[]>([]);
   const pageLoading = ref(true);
 
   const columns: TableColumnList = [
@@ -98,7 +99,7 @@ export function useHook() {
     getList();
   }
 
-  function resetForm(formEl, tableRef) {
+  function resetForm(formEl: any, tableRef: any) {
     if (!formEl) return;
     // 清空查询参数
     formEl.resetFields();
@@ -112,7 +113,7 @@ export function useHook() {
     dataList.value = CommonUtils.paginateList(originalDataList, pagination);
   }
 
-  async function handleLogout(row) {
+  async function handleLogout(row: { tokenId: string; username: string }): Promise<void> {
     await logoutOnlineUserApi(row.tokenId).then(() => {
       message(`您强制登出了用户:${row.username}`, {
         type: "success"

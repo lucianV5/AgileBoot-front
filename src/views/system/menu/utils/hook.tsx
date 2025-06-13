@@ -27,13 +27,13 @@ export function useHook() {
 
   const formRef = ref();
 
-  const originalDataList = ref([]);
+  const originalDataList = ref<MenuDTO[]>([]);
   const dataList = computed(() => {
     let filterDataList = [...originalDataList.value];
     if (!isAllEmpty(searchFormParams.menuName)) {
       // 前端搜索菜单名称
       filterDataList = filterDataList.filter((item: MenuDTO) =>
-        item.menuName.includes(searchFormParams.menuName)
+        item.menuName?.includes(searchFormParams.menuName) ?? false
       );
     }
     if (!isAllEmpty(searchFormParams.status)) {
@@ -117,7 +117,7 @@ export function useHook() {
     }
   ];
 
-  function resetForm(formEl) {
+  function resetForm(formEl :any) {
     if (!formEl) return;
     formEl.resetFields();
     onSearch();
@@ -126,7 +126,7 @@ export function useHook() {
   async function onSearch() {
     loading.value = true;
     // 这里是返回一维数组结构，前端自行处理成树结构，返回格式要求：唯一id加父节点parentId，parentId取父节点id
-    const { data } = await getMenuListApi({ isButton: null }).finally(() => {
+    const { data } = await getMenuListApi({ isButton: false }).finally(() => {
       loading.value = false;
     });
     originalDataList.value = data;
@@ -145,7 +145,7 @@ export function useHook() {
    * @param row dialog表单数据
    * @param done
    */
-  async function handleAdd(row, done) {
+  async function handleAdd(row: MenuRequest, done: () => void) {
     await addMenuApi(row).then(() => {
       message(`您新增了菜单:${row.menuName}`, {
         type: "success"
@@ -165,8 +165,8 @@ export function useHook() {
    * @param row
    * @param done
    */
-  async function handleUpdate(row, done) {
-    await updateMenuApi(row.id, row).then(() => {
+  async function handleUpdate(row: MenuRequest, done: () => void) {
+    await updateMenuApi(row.id.toString(), row).then(() => {
       message(`您更新了菜单:${row.menuName}`, {
         type: "success"
       });
@@ -184,7 +184,9 @@ export function useHook() {
 
     let meta = undefined;
     if (title === "编辑") {
-      row = (await getMenuInfoApi(row.id + "")).data;
+      if (row && row.id) {
+        row = (await getMenuInfoApi(row.id.toString())).data;
+      }
       meta = (row as MenuDetailDTO).meta;
     }
 
@@ -212,7 +214,11 @@ export function useHook() {
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: () => h(editForm, { 
+        ref: formRef,
+        formInline: options.props.formInline,
+        higherMenuOptions: props.higherMenuOptions 
+      }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as MenuRequest;
@@ -222,14 +228,14 @@ export function useHook() {
 
         console.log(curData);
 
-        FormRef.validate(valid => {
+        FormRef.validate((valid: boolean) => {
           if (valid) {
             // 表单规则校验通过
             if (title === "新增") {
-              handleAdd(curData, done);
+              handleAdd(curData, () => done());
             } else {
               // 实际开发先调用编辑接口，再进行下面操作
-              handleUpdate(curData, done);
+              handleUpdate(curData, () => done());
             }
           }
         });
@@ -237,8 +243,8 @@ export function useHook() {
     });
   }
 
-  async function handleDelete(row) {
-    await deleteMenuApi(row.id).then(() => {
+  async function handleDelete(row: MenuDTO) {
+    await deleteMenuApi(row.id?.toString() ?? '').then(() => {
       message(`您删除了${row.menuName}`, { type: "success" });
       // 刷新列表
       onSearch();

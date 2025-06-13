@@ -19,7 +19,7 @@ export interface ConfigQuery extends BasePageQuery {
  * ConfigDTO, 配置信息
  */
 export interface ConfigDTO {
-  configId?: string;
+  configId: number;
   configKey?: string;
   configName?: string;
   configOptions?: string[];

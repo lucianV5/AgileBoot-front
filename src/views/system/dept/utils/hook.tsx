@@ -24,13 +24,13 @@ export function useHook() {
 
   const formRef = ref();
 
-  const originalDataList = ref([]);
+  const originalDataList = ref<DeptDTO[]>([]);
   const dataList = computed(() => {
     let filterDataList = [...originalDataList.value];
     if (!isAllEmpty(searchFormParams.deptName)) {
       // 前端搜索部门名称
       filterDataList = filterDataList.filter((item: DeptDTO) =>
-        item.deptName.includes(searchFormParams.deptName)
+        item.deptName?.includes(searchFormParams.deptName) ?? false
       );
     }
     if (!isAllEmpty(searchFormParams.status)) {
@@ -94,7 +94,7 @@ export function useHook() {
     }
   ];
 
-  function resetForm(formEl) {
+  function resetForm(formEl: any) {
     if (!formEl) return;
     formEl.resetFields();
     onSearch();
@@ -109,7 +109,7 @@ export function useHook() {
     originalDataList.value = data;
   }
 
-  async function handleAdd(row, done) {
+  async function handleAdd(row: DeptRequest, done: () => void) {
     await addDeptApi(row).then(() => {
       message(`您新增了部门:${row.deptName}`, {
         type: "success"
@@ -121,7 +121,7 @@ export function useHook() {
     });
   }
 
-  async function handleUpdate(row, done) {
+  async function handleUpdate(row: DeptRequest, done: () => void) {
     await updateDeptApi(row.id, row).then(() => {
       message(`您更新了部门${row.deptName}`, {
         type: "success"
@@ -138,7 +138,9 @@ export function useHook() {
     const treeList = setDisabledForTreeOptions(handleTree(data), "status");
 
     if (title === "编辑") {
-      row = (await getDeptInfoApi(row.id + "")).data;
+      if (row?.id) {
+        row = (await getDeptInfoApi(row.id.toString())).data;
+      }
     }
 
     // TODO 为什么声明一个formInline变量,把变量填充进去，  再给props.formInline 结果就不生效
@@ -161,19 +163,23 @@ export function useHook() {
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: ({ options }) => h(editForm, {
+        ref: formRef,
+        formInline: options.props.formInline,
+        higherDeptOptions: options.props.higherDeptOptions 
+      }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as DeptRequest;
 
-        FormRef.validate(valid => {
+        FormRef.validate((valid: boolean) => {
           if (valid) {
             // 表单规则校验通过
             if (title === "新增") {
-              handleAdd(curData, done);
+              handleAdd(curData, () => done());
             } else {
               // 实际开发先调用编辑接口，再进行下面操作
-              handleUpdate(curData, done);
+              handleUpdate(curData, () => done());
             }
           }
         });
@@ -181,8 +187,8 @@ export function useHook() {
     });
   }
 
-  async function handleDelete(row) {
-    await deleteDeptApi(row.id).then(() => {
+  async function handleDelete(row: DeptDTO) {
+    await deleteDeptApi(row?.id?.toString() ?? '').then(() => {
       message(`您删除了部门${row.deptName}`, { type: "success" });
       // 刷新列表
       onSearch();

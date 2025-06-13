@@ -7,7 +7,8 @@ import {
   OperationLogsQuery,
   getOperationLogListApi,
   deleteOperationLogApi,
-  exportOperationLogExcelApi
+  exportOperationLogExcelApi,
+  OperationLogDTO
 } from "@/api/system/log";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -44,7 +45,7 @@ export function useOperationLogHook() {
     timeRangeColumn: defaultSort.prop
   });
 
-  const dataList = ref([]);
+  const dataList = ref<OperationLogDTO[]>([]);
   const pageLoading = ref(true);
   const multipleSelection = ref([]);
 
@@ -134,7 +135,7 @@ export function useOperationLogHook() {
     getOperationLogList();
   }
 
-  function resetForm(formEl, tableRef) {
+  function resetForm(formEl :any, tableRef :any) {
     if (!formEl) return;
     // 清空查询参数
     formEl.resetFields();
@@ -178,8 +179,8 @@ export function useOperationLogHook() {
     exportOperationLogExcelApi(toRaw(searchFormParams), "操作日志.xls");
   }
 
-  async function handleDelete(row) {
-    await deleteOperationLogApi([row.operationId]).then(() => {
+  async function handleDelete(row: OperationLogDTO) {
+    await deleteOperationLogApi([row.operationId!]).then(() => {
       message(`您删除了操作编号为${row.operationId}的这条数据`, {
         type: "success"
       });
@@ -188,7 +189,7 @@ export function useOperationLogHook() {
     });
   }
 
-  async function handleBulkDelete(tableRef) {
+  async function handleBulkDelete(tableRef: any) {
     if (multipleSelection.value.length === 0) {
       message("请选择需要删除的数据", { type: "warning" });
       return;
@@ -223,7 +224,7 @@ export function useOperationLogHook() {
       });
   }
 
-  function openDialog(row) {
+  function openDialog(row: OperationLogDTO) {
     addDialog({
       title: "日志详情",
       width: "60%",
@@ -238,7 +239,7 @@ export function useOperationLogHook() {
           size: "large",
           bg: true,
           btnClick: ({ dialog: { options, index } }) => {
-            closeDialog(options, index);
+            closeDialog(options as any, index as any);
           }
         }
       ]

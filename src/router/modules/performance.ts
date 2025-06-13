@@ -4,12 +4,12 @@ import  TrendCharts  from "@iconify-icons/ep/trend-charts";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
 const performanceRouter = {
-  path: "/system/performance/index",
+  path: "/performance/index",
   name: "SystemPerformance",
   component: () => import("@/views/system/performance/index.vue"),
   meta: {
-    title: i18n.global.t("menus.hsPerformanceManagement"),
-    icon: useRenderIcon(TrendCharts),
+    // title: i18n.global.t("menus.hsPerformanceManagement"),
+    //  icon: useRenderIcon(TrendCharts),
     roles: ["admin", "system"],
     parentId: "/system"
   }

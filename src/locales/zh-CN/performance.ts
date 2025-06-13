@@ -24,7 +24,7 @@ export default {
   addPerformance: "添加绩效",
   editPerformance: "编辑绩效",
   performanceAnalysis: "绩效分析",
-  performanceManagement: "绩效管理",
+  // performanceManagement: "绩效管理",
   createTime: "创建时间",
   updateTime: "最后更新时间",
   remark: "备注"
